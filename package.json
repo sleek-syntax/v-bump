@@ -1,7 +1,7 @@
 {
   "name": "@sleeksyntax/v-bump",
   "description": "A simple utility that bumps the version of your package according to the last commit message.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "M. Gross <mikael@sleeksyntax.com> (https://sleeksyntax.com)",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sleeksyntax/v-bump.git"
+    "url": "git+https://github.com/sleek-syntax/v-bump.git"
   },
   "license": "ISC",
   "bugs": {
