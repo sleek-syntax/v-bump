@@ -2,13 +2,13 @@
 
 Semantic version bumping for npm packages. Parses git commit messages or accepts CLI arguments.
 
-[![npm version](https://img.shields.io/npm/v/@mmpg-soft/v-bump.svg)](https://www.npmjs.com/package/@mmpg-soft/v-bump)
-[![npm downloads](https://img.shields.io/npm/dm/@mmpg-soft/v-bump.svg)](https://www.npmjs.com/package/@mmpg-soft/v-bump)
+[![npm version](https://img.shields.io/npm/v/@sleeksyntax/v-bump.svg)](https://www.npmjs.com/package/@sleeksyntax/v-bump)
+[![npm downloads](https://img.shields.io/npm/dm/@sleeksyntax/v-bump.svg)](https://www.npmjs.com/package/@sleeksyntax/v-bump)
 
 ## Installation
 
 ```bash
-npm install @mmpg-soft/v-bump
+npm install @sleeksyntax/v-bump
 ```
 
 ## Quick Start
