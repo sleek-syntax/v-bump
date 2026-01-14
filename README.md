@@ -1,38 +1,72 @@
-# V-Bump 🆙
+# v-bump
 
-V-Bump is a short utility that will help developer maintain clear versioning for their packages and projects.
-It works by parsing the git commit message and extracting the command and size of the commit or via command line arguments.
+Semantic version bumping for npm packages. Parses git commit messages or accepts CLI arguments.
 
-## Getting started
+[![npm version](https://img.shields.io/npm/v/@mmpg-soft/v-bump.svg)](https://www.npmjs.com/package/@mmpg-soft/v-bump)
+[![npm downloads](https://img.shields.io/npm/dm/@mmpg-soft/v-bump.svg)](https://www.npmjs.com/package/@mmpg-soft/v-bump)
 
-Install the package with npm by running: `npm install @mmpg-soft/v-bump`.
+## Installation
 
-## How to use it
+```bash
+npm install @mmpg-soft/v-bump
+```
 
-Triggering v-bump works by running `v-bump` in your terminal.
-The `v-bump` command takes several arguments that you can check by running `v-bump -h`.
-`v-bump` will by default, if no arguments are passed, try to read your latest git commit message versioning insructions. The script looks for something formatted like this: `[[instruction:increment]]`. A few use case would be:
+## Quick Start
 
-- `[[patch:1]]`: would turn 1.0.0 into 1.0.1
-- `[[patch:2]]`: would turn 1.0.1 into 1.0.3
-- `[[minor:1]]`: would turn 1.4.9 into 1.5.0
-- `[[major:1]]`: would turn 1.2.5 into 2.0.0
+```bash
+# Bump patch version
+v-bump -s patch
 
-If you do not wish to run v-bump with automated git message instructions, you could pass some arguments as well.
-For most use cases, one argument is sufficient: `-s` (severity).
-Severity takes three values:
+# Bump minor version
+v-bump -s minor
 
-- 'patch'
-- 'minor'
-- 'major'
+# Bump major version
+v-bump -s major
+```
 
-Each of those will increment the relevant number by 1 if no value is specified.
-The value position are described as follows: `major.minor.patch (ex: 1.0.2)`.
+## Usage
 
-If you wish to increment the severity value by more than the default 1, you could pass `-i` (increment) followed by the value you wish to increment. Realistic examples would be:
+### CLI Arguments
 
-- `v-bump -s patch -i 1`: would turn 1.0.0 into 1.0.1
-- `v-bump -s patch -i 2`: would turn 1.0.1 into 1.0.3
-- `v-bump -s minor -i 1`: would turn 1.4.9 into 1.5.0
-- `v-bump -s major`: would turn 1.2.5 into 2.0.0
-- `v-bump -s major -i 2`: would turn 1.2.5 into 3.0.0
+| Flag | Description      | Values                    |
+| ---- | ---------------- | ------------------------- |
+| `-s` | Severity level   | `patch`, `minor`, `major` |
+| `-i` | Increment amount | Number (default: 1)       |
+| `-h` | Show help        | -                         |
+
+**Examples:**
+
+```bash
+v-bump -s patch         # 1.0.0 → 1.0.1
+v-bump -s patch -i 2    # 1.0.1 → 1.0.3
+v-bump -s minor         # 1.4.9 → 1.5.0
+v-bump -s major         # 1.2.5 → 2.0.0
+v-bump -s major -i 2    # 1.2.5 → 3.0.0
+```
+
+### Git Commit Parsing
+
+When no arguments are passed, v-bump reads the latest git commit message for version instructions.
+
+**Format:** `[[severity:increment]]`
+
+```bash
+git commit -m "fix: resolve login bug [[patch:1]]"
+v-bump  # 1.0.0 → 1.0.1
+
+git commit -m "feat: add new API [[minor:1]]"
+v-bump  # 1.0.1 → 1.1.0
+
+git commit -m "breaking: restructure database [[major:1]]"
+v-bump  # 1.1.0 → 2.0.0
+```
+
+## Version Reset Behavior
+
+- **Major bump**: Resets minor and patch to 0
+- **Minor bump**: Resets patch to 0
+- **Patch bump**: Increments patch only
+
+## License
+
+MIT

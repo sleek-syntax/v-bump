@@ -1,8 +1,8 @@
 {
-  "name": "@mmpg-soft/v-bump",
+  "name": "@sleeksyntax/v-bump",
   "description": "A simple utility that bumps the version of your package according to the last commit message.",
-  "version": "1.0.1",
-  "author": "M. Gross <mg@mmpg.xyz> (https://mmpg.xyz)",
+  "version": "1.0.3",
+  "author": "M. Gross <mikael@sleeksyntax.com> (https://sleeksyntax.com)",
   "main": "index.js",
   "scripts": {
     "test": "test",
@@ -12,14 +12,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MMPG-Consulting/v-bump.git"
+    "url": "git+https://github.com/sleeksyntax/v-bump.git"
   },
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/MMPG-Consulting/v-bump/issues"
+    "url": "https://github.com/sleek-syntax/v-bump/issues"
   },
-  "homepage": "https://github.com/MMPG-Consulting/v-bump#readme",
+  "homepage": "https://github.com/sleek-syntax/v-bump#readme",
   "bin": {
     "v-bump": "bin/index.sh"
+  },
+  "dependencies": {
+    "@sleeksyntax/v-bump": "^1.0.2"
   }
 }

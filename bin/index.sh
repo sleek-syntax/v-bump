@@ -3,97 +3,127 @@
 # functions
 print_usage() {
   printf "
-    ##################################################
-    #                                                #
-    #                     BUMPME                     #
-    #                                                #
-    ##################################################
-    |                                                |
-    | Simple lightweight utility to manage versions  |
-    | in package.json files.                         |
-    |                                                |
-    |   COMMAND                                      |
-    |                                                |
-    |   bumpme                                       |
-    |   only command that you can run with this      |
-    |   package. Will bump your version according to |
-    |   your arguments.                              |
-    |                                                |
-    |   ARGUMENTS                                    |
-    |                                                |
-    |   -s                                           |
-    |   sets the severity of the bump. Accepts:      |
-    |   patch, minor, major                          |
-    |                                                |
-    |   -i                                           |
-    |   sets the increment. Accepts an int value     |
-    |                                                |
-    |   -h                                           |
-    |    prints this message :)                      |
-    |                                                |
-    ##################################################
+
+    ██╗   ██╗      ██████╗ ██╗   ██╗███╗   ███╗██████╗
+    ██║   ██║      ██╔══██╗██║   ██║████╗ ████║██╔══██╗
+    ██║   ██║█████╗██████╔╝██║   ██║██╔████╔██║██████╔╝
+    ╚██╗ ██╔╝╚════╝██╔══██╗██║   ██║██║╚██╔╝██║██╔═══╝
+     ╚████╔╝       ██████╔╝╚██████╔╝██║ ╚═╝ ██║██║
+      ╚═══╝        ╚═════╝  ╚═════╝ ╚═╝     ╚═╝╚═╝
+
+    ───────────────────────────────────────────────────
+    Simple lightweight utility to manage versions
+    in package.json files.
+    ───────────────────────────────────────────────────
+
+    COMMAND
+
+      v-bump
+      Bumps your version according to your arguments
+      or git commit message.
+
+    ARGUMENTS
+
+      -s    Severity of bump: patch | minor | major
+      -i    Increment amount (default: 1)
+      -h    Show this help message
+
+    EXAMPLES
+
+      v-bump -s patch -i 1    1.0.0 → 1.0.1
+      v-bump -s minor         1.4.9 → 1.5.0
+      v-bump -s major         1.2.5 → 2.0.0
+
+    ───────────────────────────────────────────────────
 
     "
+}
+
+validate_severity() {
+    local severity="$1"
+    local accepted_severity=("patch" "minor" "major")
+    if [[ ! " ${accepted_severity[*]} " =~ " ${severity} " ]]; then
+        echo "Error: Invalid severity '$severity'. Accepted values: patch, minor, major"
+        exit 1
+    fi
+}
+
+validate_increment() {
+    local increment="$1"
+    if [[ ! "$increment" =~ ^[0-9]+$ ]]; then
+        echo "Error: Invalid increment '$increment'. Must be a positive integer."
+        exit 1
+    fi
 }
 
 # arguments extraction
 severity_flag=''
 increment_flag=''
-acepted_severity=("patch" "minor" "major")
 
-while getopts 's:i:ha:' flag; do
+while getopts 's:i:h' flag; do
   case "${flag}" in
-    s) severity_flag=${OPTARG} ;;
-    i) increment_flag=${OPTARG} ;;
+    s) severity_flag="${OPTARG}" ;;
+    i) increment_flag="${OPTARG}" ;;
     h) print_usage
-    exit 0;;
+       exit 0 ;;
   esac
 done
 
-# validating argument
-# must be an accepted value
-if [[ $severity_flag ]]; then 
-    if [[ ! " ${acepted_severity[*]} " =~ " ${severity_flag} " ]]; then
-        echo "The value you passed for severity does not match any of the accepted values: patch, minor, major";
-        exit 0;
-    fi
+# validate CLI arguments if provided
+if [[ -n "$severity_flag" ]]; then
+    validate_severity "$severity_flag"
 fi
 
-# must be a number
-if [[ $increment_flag ]]; then
-    case $increment_flag in
-        ''|*[!0-9]*) echo "The value you passed for increment is not a number.";
-            exit 0;;
-        *) echo '';;
-    esac
+if [[ -n "$increment_flag" ]]; then
+    validate_increment "$increment_flag"
 else
-    echo '';
-    increment_flag=1;
+    increment_flag=1
 fi
 
-# the script can start
-if [[ $severity_flag && $increment_flag ]]; then
-    echo "Bumping with args";
+# determine source of version instructions
+if [[ -n "$severity_flag" && -n "$increment_flag" ]]; then
+    echo "Bumping with args"
 else
-    echo "Bumping with git commit message";
-    # get message of latest commit which should contain the
-    # details used for versioning
+    echo "Bumping with git commit message"
     echo "Getting latest commit..."
-    commit=`git log -1 --pretty=%B` || exit 0;
 
-    # understand which case it has to handle: major, minor, hotfix
-    echo "Extracting the severity and incrmeent of the commit..."
+    if ! commit=$(git log -1 --pretty=%B 2>/dev/null); then
+        echo "Error: Not a git repository or no commits found."
+        exit 1
+    fi
+
+    if [[ ! "$commit" =~ \[\[.+:.+\]\] ]]; then
+        echo "Error: Commit message does not contain version instruction."
+        echo "Expected format: [[severity:increment]] (e.g., [[patch:1]])"
+        exit 1
+    fi
+
+    echo "Extracting the severity and increment from the commit..."
     command=${commit#*[[}
     severity_flag=${command%:*}
     increment_flag=${command#*:}
     increment_flag=${increment_flag%"]]"*}
+
     echo "Found severity: $severity_flag"
     echo "Found increment: $increment_flag"
+
+    # validate parsed values
+    validate_severity "$severity_flag"
+    validate_increment "$increment_flag"
 fi
 
-# gets current package version from package.json
+# check for package.json
+if [[ ! -f "package.json" ]]; then
+    echo "Error: package.json not found in current directory."
+    exit 1
+fi
+
+# get current package version from package.json
 echo "Getting current version..."
-current=`node --eval="process.stdout.write(require('./package.json').version)"`
+if ! current=$(node --eval="process.stdout.write(require('./package.json').version)" 2>/dev/null); then
+    echo "Error: Failed to read version from package.json. Is Node.js installed?"
+    exit 1
+fi
 
 # extract the current version values
 echo "Exploding current version..."
@@ -104,22 +134,22 @@ patchcur=${versions[2]}
 
 # set the version in package.json
 echo "Bumping $severity_flag by $increment_flag..."
-if [[ $severity_flag == "major" ]]; then
-    majorcur=$(( $majorcur + $increment_flag ));
-    minorcur=0;
-    patchcur=0;
-elif [[ $severity_flag == "minor" ]]; then
-    minorcur=$(( $minorcur + $increment_flag ))
+if [[ "$severity_flag" == "major" ]]; then
+    majorcur=$((majorcur + increment_flag))
+    minorcur=0
     patchcur=0
-elif [[ $severity_flag == "patch" ]]; then
-    patchcur=$(( $patchcur + $increment_flag ))
-else
-    echo "Your git commit message does not contain a proper formatted command. ex: [[patch:1]].";
-    exit 0;
+elif [[ "$severity_flag" == "minor" ]]; then
+    minorcur=$((minorcur + increment_flag))
+    patchcur=0
+elif [[ "$severity_flag" == "patch" ]]; then
+    patchcur=$((patchcur + increment_flag))
 fi
 
-newver=$majorcur.$minorcur.$patchcur;
-npm version $newver --commit-hooks false --git-tag-version false || exit 0;
+newver="$majorcur.$minorcur.$patchcur"
+if ! npm version "$newver" --commit-hooks false --git-tag-version false; then
+    echo "Error: npm version command failed."
+    exit 1
+fi
 
-echo "New version $newver is set";
-exit 0;
+echo "New version $newver is set"
+exit 0
